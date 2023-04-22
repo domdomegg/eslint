@@ -3945,7 +3945,7 @@ var a = "test2";
             linterWithOption.defineRule("checker", {
                 create(context) {
                     spy = sinon.spy(() => {
-                        assert.strictEqual(context.getCwd(), cwd);
+                        assert.strictEqual(context.cwd, cwd);
                     });
                     return { Program: spy };
                 }
@@ -3963,7 +3963,7 @@ var a = "test2";
                 create(context) {
 
                     spy = sinon.spy(() => {
-                        assert.strictEqual(context.getCwd(), process.cwd());
+                        assert.strictEqual(context.cwd, process.cwd());
                     });
                     return { Program: spy };
                 }
@@ -3980,7 +3980,7 @@ var a = "test2";
                 create(context) {
 
                     spy = sinon.spy(() => {
-                        assert.strictEqual(context.getCwd(), process.cwd());
+                        assert.strictEqual(context.cwd, process.cwd());
                     });
                     return { Program: spy };
                 }
@@ -10940,6 +10940,89 @@ describe("Linter with FlatConfigArray", () => {
 
                                             spy = sinon.spy(() => {
                                                 assert.strictEqual(context.getCwd(), process.cwd());
+                                            });
+                                            return { Program: spy };
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        ...baseConfig
+                    };
+
+                    linter.verify(code, config);
+                    assert(spy && spy.calledOnce);
+                });
+            });
+
+            describe("context.cwd", () => {
+                const code = "a;\nb;";
+                const baseConfig = { rules: { "test/checker": "error" } };
+
+                it("should get cwd correctly in the context", () => {
+                    const cwd = "cwd";
+                    const linterWithOption = new Linter({ cwd, configType: "flat" });
+                    let spy;
+                    const config = {
+                        plugins: {
+                            test: {
+                                rules: {
+                                    checker: {
+                                        create(context) {
+                                            spy = sinon.spy(() => {
+                                                assert.strictEqual(context.cwd, cwd);
+                                            });
+                                            return { Program: spy };
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        ...baseConfig
+                    };
+
+                    linterWithOption.verify(code, config);
+                    assert(spy && spy.calledOnce);
+                });
+
+                it("should assign process.cwd() to it if cwd is undefined", () => {
+
+                    const linterWithOption = new Linter({ configType: "flat" });
+                    let spy;
+                    const config = {
+                        plugins: {
+                            test: {
+                                rules: {
+                                    checker: {
+                                        create(context) {
+
+                                            spy = sinon.spy(() => {
+                                                assert.strictEqual(context.cwd, process.cwd());
+                                            });
+                                            return { Program: spy };
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        ...baseConfig
+                    };
+
+                    linterWithOption.verify(code, config);
+                    assert(spy && spy.calledOnce);
+                });
+
+                it("should assign process.cwd() to it if the option is undefined", () => {
+                    let spy;
+                    const config = {
+                        plugins: {
+                            test: {
+                                rules: {
+                                    checker: {
+                                        create(context) {
+
+                                            spy = sinon.spy(() => {
+                                                assert.strictEqual(context.cwd, process.cwd());
                                             });
                                             return { Program: spy };
                                         }
