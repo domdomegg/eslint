@@ -1846,7 +1846,7 @@ describe("Linter", () => {
             linter.defineRule(code, {
                 create: context => ({
                     Literal(node) {
-                        context.report(node, context.getPhysicalFilename());
+                        context.report(node, context.physicalFilename);
                     }
                 })
             });
@@ -4863,7 +4863,7 @@ var a = "test2";
         describe("physicalFilenames", () => {
             it("should be same as `filename` passed on options object, if no processors are used", () => {
                 const physicalFilenameChecker = sinon.spy(context => {
-                    assert.strictEqual(context.getPhysicalFilename(), "foo.js");
+                    assert.strictEqual(context.physicalFilename, "foo.js");
                     return {};
                 });
 
@@ -4874,7 +4874,7 @@ var a = "test2";
 
             it("should default physicalFilename to <input> when options object doesn't have filename", () => {
                 const physicalFilenameChecker = sinon.spy(context => {
-                    assert.strictEqual(context.getPhysicalFilename(), "<input>");
+                    assert.strictEqual(context.physicalFilename, "<input>");
                     return {};
                 });
 
@@ -4885,7 +4885,7 @@ var a = "test2";
 
             it("should default physicalFilename to <input> when only two arguments are passed", () => {
                 const physicalFilenameChecker = sinon.spy(context => {
-                    assert.strictEqual(context.getPhysicalFilename(), "<input>");
+                    assert.strictEqual(context.physicalFilename, "<input>");
                     return {};
                 });
 
@@ -6752,7 +6752,7 @@ var a = "test2";
                 create: context => ({
                     Program(ast) {
                         receivedFilenames.push(context.getFilename());
-                        receivedPhysicalFilenames.push(context.getPhysicalFilename());
+                        receivedPhysicalFilenames.push(context.physicalFilename);
                         context.report({ node: ast, message: context.getSourceCode().text });
                     }
                 })
@@ -9143,6 +9143,40 @@ describe("Linter with FlatConfigArray", () => {
 
             });
 
+            describe("context.physicalFilename", () => {
+
+                const ruleId = "filename-rule";
+
+                it("has access to the physicalFilename", () => {
+
+                    const config = {
+                        plugins: {
+                            test: {
+                                rules: {
+                                    [ruleId]: {
+                                        create: context => ({
+                                            Literal(node) {
+                                                context.report(node, context.physicalFilename);
+                                            }
+                                        })
+                                    }
+                                }
+                            }
+                        },
+                        rules: {
+                            [`test/${ruleId}`]: 1
+                        }
+                    };
+
+                    const messages = linter.verify("0", config, filename);
+                    const suppressedMessages = linter.getSuppressedMessages();
+
+                    assert.strictEqual(messages[0].message, filename);
+                    assert.strictEqual(suppressedMessages.length, 0);
+                });
+
+            });
+
             describe("context.getSourceLines()", () => {
 
                 it("should get proper lines when using \\n as a line break", () => {
@@ -11157,7 +11191,7 @@ describe("Linter with FlatConfigArray", () => {
             describe("physicalFilename", () => {
                 it("should be same as `filename` passed on options object, if no processors are used", () => {
                     const physicalFilenameChecker = sinon.spy(context => {
-                        assert.strictEqual(context.getPhysicalFilename(), "foo.js");
+                        assert.strictEqual(context.physicalFilename, "foo.js");
                         return {};
                     });
 
@@ -11180,7 +11214,7 @@ describe("Linter with FlatConfigArray", () => {
 
                 it("should default physicalFilename to <input> when options object doesn't have filename", () => {
                     const physicalFilenameChecker = sinon.spy(context => {
-                        assert.strictEqual(context.getPhysicalFilename(), "<input>");
+                        assert.strictEqual(context.physicalFilename, "<input>");
                         return {};
                     });
 
@@ -11203,7 +11237,7 @@ describe("Linter with FlatConfigArray", () => {
 
                 it("should default physicalFilename to <input> when only two arguments are passed", () => {
                     const physicalFilenameChecker = sinon.spy(context => {
-                        assert.strictEqual(context.getPhysicalFilename(), "<input>");
+                        assert.strictEqual(context.physicalFilename, "<input>");
                         return {};
                     });
 
@@ -15370,7 +15404,7 @@ var a = "test2";
                                 return {
                                     Program(ast) {
                                         receivedFilenames.push(context.getFilename());
-                                        receivedPhysicalFilenames.push(context.getPhysicalFilename());
+                                        receivedPhysicalFilenames.push(context.physicalFilename);
                                         context.report({ node: ast, message: context.getSourceCode().text });
                                     }
                                 };
